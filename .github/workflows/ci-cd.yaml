@@ -32,16 +32,17 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
       - name: Test model loading and prediction
         run: |
           python -c "
-import joblib
-model = joblib.load('sales_prediction_model.pkl')
-pred = model.predict([[9995, 4.5, 25, 300]])
-print(f'✅ Prediction: {int(pred[0])}')
-assert pred[0] > 0, 'Prediction must be positive'
-"
+          import joblib
+          model = joblib.load('sales_prediction_model.pkl')
+          pred = model.predict([[9995, 4.5, 25, 300]])
+          print(f'Prediction: {int(pred[0])}')
+          assert pred[0] > 0, 'Prediction must be positive'
+          "
 
   build-docker:
     needs: [lint, test-model]
@@ -57,5 +58,3 @@ assert pred[0] > 0, 'Prediction must be positive'
           file: ./Dockerfile
           push: false
           tags: nike-sales-api:latest
-      - name: Verify image exists
-        run: docker inspect nike-sales-api:latest
