@@ -1,7 +1,8 @@
+# main.py
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-
+import numpy as np
 
 # Load model at startup
 model = joblib.load("sales_prediction_model.pkl")
@@ -9,8 +10,10 @@ model = joblib.load("sales_prediction_model.pkl")
 
 app = FastAPI(
     title="Nike Future Sales Predictor",
-    description="Predict next-period sales using product features and past sales.",
-    version="1.0"
+    description=(
+        "Predict next-period sales using product features and past sales."
+    ),
+    version="1.0",
 )
 
 
@@ -23,16 +26,18 @@ class SalesInput(BaseModel):
 
 @app.get("/")
 def home():
+    """API home endpoint"""
     return {"message": "Nike Sales Prediction API is running!"}
 
 
 @app.post("/predict")
 def predict(input_data: SalesInput):
+    """Predict future sales for a product"""
     features = [[
         input_data.sale_price,
         input_data.rating,
         input_data.review_posted,
-        input_data.sold_products
+        input_data.sold_products,
     ]]
     prediction = model.predict(features)
     return {"predicted_future_sales": int(round(prediction[0]))}
