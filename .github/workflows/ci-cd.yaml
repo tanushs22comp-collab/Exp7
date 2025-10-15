@@ -1,0 +1,61 @@
+name: CI/CD for Nike Sales API
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install linters
+        run: |
+          pip install flake8 black
+      - name: Lint code
+        run: |
+          flake8 main.py --count --show-source --statistics
+          black --check main.py
+
+  test-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Test model loading and prediction
+        run: |
+          python -c "
+import joblib
+model = joblib.load('sales_prediction_model.pkl')
+pred = model.predict([[9995, 4.5, 25, 300]])
+print(f'✅ Prediction: {int(pred[0])}')
+assert pred[0] > 0, 'Prediction must be positive'
+"
+
+  build-docker:
+    needs: [lint, test-model]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: nike-sales-api:latest
+      - name: Verify image exists
+        run: docker inspect nike-sales-api:latest
