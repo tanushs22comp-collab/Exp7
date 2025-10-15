@@ -31,11 +31,13 @@ def home():
 @app.post("/predict")
 def predict(input_data: SalesInput):
     """Predict future sales for a product"""
-    features = [[
-        input_data.sale_price,
-        input_data.rating,
-        input_data.review_posted,
-        input_data.sold_products,
-    ]]
+    features = [
+        [
+            input_data.sale_price,
+            input_data.rating,
+            input_data.review_posted,
+            input_data.sold_products,
+        ]
+    ]
     prediction = model.predict(features)
     return {"predicted_future_sales": int(round(prediction[0]))}
