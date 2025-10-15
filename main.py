@@ -2,11 +2,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-import numpy as np
 
 # Load model at startup
 model = joblib.load("sales_prediction_model.pkl")
-
 
 app = FastAPI(
     title="Nike Future Sales Predictor",
